@@ -1,0 +1,151 @@
+select * from [Data Cleaning DB].[dbo].[Nashville Housing]
+
+
+--------- Populating Property Address Data
+
+select *
+from [Data Cleaning DB].[dbo].[Nashville Housing]
+order by ParcelID
+
+
+
+select a.parcelid, a.propertyaddress,b.parcelid,b.propertyaddress, isnull(a.propertyaddress,b.propertyaddress)
+from [Data Cleaning DB].[dbo].[Nashville Housing] a
+join [Data Cleaning DB].[dbo].[Nashville Housing] b
+  on a.parcelid=b.parcelid
+  and a.[uniqueid] <> b.[uniqueid]
+where a.propertyaddress is null
+
+update a
+set propertyaddress=isnull(a.propertyaddress,b.propertyaddress)
+from [Data Cleaning DB].[dbo].[Nashville Housing] a
+join [Data Cleaning DB].[dbo].[Nashville Housing] b
+  on a.parcelid=b.parcelid
+  and a.[uniqueid] <> b.[uniqueid]
+  where a.propertyaddress is null
+
+
+  ----- Breaking the address into individual columns e.g. address,city,state
+
+select propertyaddress
+from [Data Cleaning DB].[dbo].[Nashville Housing]
+--order by ParcelID
+
+select 
+substring(propertyaddress, 1, CHARINDEX(',', propertyaddress)-1) as address
+, substring(propertyaddress, CHARINDEX(',', propertyaddress)+1 , len(propertyaddress))  as address
+from [Data Cleaning DB].[dbo].[Nashville Housing]
+
+alter table [Data Cleaning DB].[dbo].[Nashville Housing]
+add PropertySplitAddress Nvarchar(255)
+
+update [Data Cleaning DB].[dbo].[Nashville Housing]
+set PropertySplitAddress=substring(propertyaddress, 1, CHARINDEX(',', propertyaddress)-1)
+
+
+alter table [Data Cleaning DB].[dbo].[Nashville Housing]
+add PropertySplitcity Nvarchar(255)
+
+update [Data Cleaning DB].[dbo].[Nashville Housing]
+set PropertySplitcity=substring(propertyaddress, CHARINDEX(',', propertyaddress)+1 , len(propertyaddress))
+
+
+--owneradress
+select owneraddress 
+from [Data Cleaning DB].[dbo].[Nashville Housing]
+
+select 
+PARSENAME(replace(owneraddress, ',', '.') ,3)
+,PARSENAME(replace(owneraddress, ',', '.') ,2)
+,PARSENAME(replace(owneraddress, ',', '.') ,1)
+from [Data Cleaning DB].[dbo].[Nashville Housing]
+
+alter table [Data Cleaning DB].[dbo].[Nashville Housing]
+add OwnerSplitAddress Nvarchar(255)
+
+update [Data Cleaning DB].[dbo].[Nashville Housing]
+set OwnerSplitAddress=PARSENAME(replace(owneraddress, ',', '.') ,3)
+
+
+alter table [Data Cleaning DB].[dbo].[Nashville Housing]
+add OwnerSplitcity Nvarchar(255)
+
+update [Data Cleaning DB].[dbo].[Nashville Housing]
+set OwnerSplitcity=PARSENAME(replace(owneraddress, ',', '.') ,2)
+
+
+alter table [Data Cleaning DB].[dbo].[Nashville Housing]
+add OwnerSplitState Nvarchar(255)
+
+update [Data Cleaning DB].[dbo].[Nashville Housing]
+set OwnerSplitState=PARSENAME(replace(owneraddress, ',', '.') ,1)
+
+
+------Change N and Y in sold as vacant to Yes and No
+
+select distinct(soldasvacant), count(soldasvacant)
+from [Data Cleaning DB].[dbo].[Nashville Housing]
+group by soldasvacant
+order by 2
+
+select soldasvacant
+, case when soldasvacant='Y' then 'Yes'
+       when soldasvacant='N' then 'No'
+	   else soldasvacant
+	   end
+from [Data Cleaning DB].[dbo].[Nashville Housing]
+
+update [Nashville Housing]
+set SoldAsVacant=case when soldasvacant='Y' then 'Yes'
+       when soldasvacant='N' then 'No'
+	   else soldasvacant
+	   end
+
+
+
+
+------- Remove Duplicates
+with RowNumCTE as(
+select *,
+   ROW_NUMBER() over(
+   Partition by ParcelID,
+				PropertyAddress,
+				SalePrice,
+				SaleDate,
+				LegalReference
+				ORDER BY UniqueID
+				) AS row_num
+ from [Data Cleaning DB].[dbo].[Nashville Housing]
+ --order by ParcelID
+ )
+delete
+ from RowNumCTE
+ where row_num > 1
+ --order by PropertyAddress
+-- The delete Is only Change 
+with RowNumCTE as(
+select *,
+   ROW_NUMBER() over(
+   Partition by ParcelID,
+				PropertyAddress,
+				SalePrice,
+				SaleDate,
+				LegalReference
+				ORDER BY UniqueID
+				) AS row_num
+ from [Data Cleaning DB].[dbo].[Nashville Housing]
+ --order by ParcelID
+ )
+ select * 
+ from RowNumCTE
+ where row_num > 1
+ order by PropertyAddress
+
+------- Delete Unused columns
+
+ select * 
+from [Data Cleaning DB].[dbo].[Nashville Housing]
+
+
+ALTER TABLE portfolio..NashvilleHousing
+DROP COLUMN OwnerAddress, PropertyAddress, TaxDistrict, SaleDate
