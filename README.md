@@ -44,26 +44,18 @@ Renamed columns for clarity and consistency (e.g., house_price instead of hp, li
 
 Trimmed leading/trailing whitespace from text fields
 
-🧾 Key SQL Techniques Used
-
-IS NULL, LEN(), TRIM()
-
-ROW_NUMBER() for duplicate detection
-
-CAST() and CONVERT() for type standardization
-
-DELETE, UPDATE, and ALTER TABLE statements
-
-📁 Files Included
+📁 Files Included;
 
 housing_data_cleaning.sql – SQL script used for all data cleaning steps
 
 README.md – This project documentation
 
 ✅ Outcome
+
 The result is a clean, consistent, and analysis-ready housing dataset. All rows contain complete essential data, duplicates have been removed, and the schema has been standardized for clarity and usability in future reporting or data science workflows.
 
 🚀 Next Steps
+
 Load the cleaned dataset into Power BI or Excel for exploratory data analysis
 
 Enrich with external data (e.g., regional pricing trends, mortgage rates)
