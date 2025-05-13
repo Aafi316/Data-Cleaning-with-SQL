@@ -44,12 +44,6 @@ Renamed columns for clarity and consistency (e.g., house_price instead of hp, li
 
 Trimmed leading/trailing whitespace from text fields
 
-📁 Files Included;
-
-housing_data_cleaning.sql – SQL script used for all data cleaning steps
-
-README.md – This project documentation
-
 ✅ Outcome
 
 The result is a clean, consistent, and analysis-ready housing dataset. All rows contain complete essential data, duplicates have been removed, and the schema has been standardized for clarity and usability in future reporting or data science workflows.
